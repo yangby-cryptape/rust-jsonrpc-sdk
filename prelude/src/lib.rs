@@ -5,3 +5,14 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
+
+pub use jsonrpc_core;
+pub use serde_json;
+
+pub use jsonrpc_sdk_macros::jsonrpc_client;
+
+mod error;
+mod kernel;
+
+pub use error::{Error, Result};
+pub use kernel::{CommonPart, JsonRpcRequest};
