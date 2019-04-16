@@ -157,10 +157,10 @@ impl JsonRpcClientDef {
             let output = if let syn::ReturnType::Type(_, bt) = decl.output {
                 *bt
             } else {
-                return Err(ParseError::new(
-                    ident.span(),
-                    "need a return type (`()` for no return)",
-                ));
+                syn::Type::Tuple(syn::TypeTuple {
+                    paren_token: syn::token::Paren::default(),
+                    elems: syn::punctuated::Punctuated::new(),
+                })
             };
             let api = JsonRpcApiDef {
                 name,
