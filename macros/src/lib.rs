@@ -261,13 +261,15 @@ fn construct_jsonrpc_common_part(
     quote!(
         pub struct #response(#output);
 
-        impl #response {
-            pub fn inner(&self) -> &#output {
-                &self.0
+        impl ::std::convert::From<#response> for #output {
+            fn from(r: #response) -> #output {
+                r.0
             }
+        }
 
-            pub fn into_inner(self) -> #output {
-                self.0
+        impl ::std::convert::From<#output> for #response {
+            fn from(o: #output) -> #response {
+                #response(o)
             }
         }
 
