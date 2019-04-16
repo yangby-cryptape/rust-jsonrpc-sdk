@@ -11,6 +11,7 @@ use reqwest::Error as ReqwestError;
 
 #[derive(Debug)]
 pub enum Error {
+    OptionNone,
     Custom(String),
     Core(CoreError),
     Serde(String),
@@ -28,6 +29,10 @@ impl ::std::error::Error for Error {}
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 impl Error {
+    pub fn none() -> Self {
+        Error::OptionNone
+    }
+
     pub fn custom(msg: &str) -> Self {
         Error::Custom(msg.to_owned())
     }
