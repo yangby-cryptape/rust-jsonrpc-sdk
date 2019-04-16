@@ -3,6 +3,12 @@ name = "jsonrpc-sdk-macros"
 version = "0.1.0"
 authors = ["Boyu Yang <yangby@cryptape.com>"]
 edition = "2018"
+description = "A internal crate used by jsonrpc-sdk-prelude."
+homepage = "https://github.com/yangby-cryptape/rust-jsonrpc-sdk"
+repository = "https://github.com/yangby-cryptape/rust-jsonrpc-sdk"
+keywords = ["jsonrpc"]
+categories = ["web-programming"]
+license = "Apache-2.0 OR MIT"
 
 [lib]
 proc-macro = true
@@ -11,3 +17,6 @@ proc-macro = true
 syn = { version = "~0.15", features = ["full", "extra-traits"] }
 quote = "~0.6"
 proc-macro2 = "~0.4"
+
+[badges]
+travis-ci = { repository = "yangby-cryptape/rust-jsonrpc-sdk" }
