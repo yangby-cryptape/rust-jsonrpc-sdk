@@ -6,39 +6,36 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use futures::Future;
-pub use reqwest::r#async::{
-    Client as RawClient, ClientBuilder as RawClientBuilder, Decoder, Request as RawRequest,
-    RequestBuilder as RawRequestBuilder, Response as RawResponse,
+use futures::{future, Future};
+use reqwest::{
+    header::HeaderMap,
+    r#async::{
+        Client as RawClient, ClientBuilder as RawClientBuilder,
+        RequestBuilder as RawRequestBuilder, Response as RawResponse,
+    },
+    IntoUrl,
 };
-use reqwest::IntoUrl;
-pub use reqwest::{Error as RawError, Method as RawMethod};
 
-use jsonrpc_sdk_prelude::{jsonrpc_core::Response, CommonPart, Error, JsonRpcRequest};
+use jsonrpc_sdk_prelude::{jsonrpc_core::Response, CommonPart, Error, JsonRpcRequest, Result};
 
-pub struct Client {
-    inner: RawClient,
-}
+pub struct Client(RawClient);
+pub struct ClientBuilder(RawClientBuilder);
+pub struct RequestBuilder(RawRequestBuilder);
 
 impl Client {
     pub fn new() -> Self {
-        Self {
-            inner: RawClient::new(),
-        }
+        Client(RawClient::new())
     }
 
-    pub fn request<U>(&self, method: RawMethod, url: U) -> RequestBuilder
-    where
-        U: IntoUrl,
-    {
-        RequestBuilder::new(self.inner.request(method, url))
+    pub fn builder() -> ClientBuilder {
+        ClientBuilder(RawClient::builder())
     }
 
     pub fn post<U>(&self, url: U) -> RequestBuilder
     where
         U: IntoUrl,
     {
-        self.request(RawMethod::POST, url)
+        RequestBuilder(self.0.post(url))
     }
 }
 
@@ -48,15 +45,29 @@ impl Default for Client {
     }
 }
 
-pub struct RequestBuilder {
-    inner: RawRequestBuilder,
+impl ClientBuilder {
+    pub fn build(self) -> Result<Client> {
+        Ok(Client(self.0.build()?))
+    }
+
+    pub fn tcp_nodelay(self) -> Self {
+        ClientBuilder(self.0.tcp_nodelay())
+    }
+
+    pub fn default_headers(self, headers: HeaderMap) -> Self {
+        ClientBuilder(self.0.default_headers(headers))
+    }
+
+    pub fn gzip(self, enable: bool) -> Self {
+        ClientBuilder(self.0.gzip(enable))
+    }
+
+    pub fn connect_timeout(self, timeout: ::std::time::Duration) -> Self {
+        ClientBuilder(self.0.connect_timeout(timeout))
+    }
 }
 
 impl RequestBuilder {
-    pub fn new(inner: RawRequestBuilder) -> Self {
-        Self { inner }
-    }
-
     pub fn send<T>(
         self,
         content: T,
@@ -65,13 +76,18 @@ impl RequestBuilder {
     where
         T: JsonRpcRequest,
     {
-        let request = content.to_single_request(common).unwrap();
-        self.inner
-            .json(&request)
-            .send()
-            .and_then(RawResponse::error_for_status)
-            .and_then(|mut r| r.json::<Response>())
-            .map_err(std::convert::Into::into)
-            .and_then(T::parse_single_response)
+        match content.to_single_request(common) {
+            Ok(request) => future::ok(request),
+            Err(error) => future::err(error),
+        }
+        .and_then(|request| {
+            self.0
+                .json(&request)
+                .send()
+                .and_then(RawResponse::error_for_status)
+                .and_then(|mut r| r.json::<Response>())
+                .map_err(std::convert::Into::into)
+                .and_then(T::parse_single_response)
+        })
     }
 }

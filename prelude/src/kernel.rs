@@ -101,7 +101,7 @@ where
                     trace!("Success {{ jsonrpc: {:#?}, id: {:#?} }}", jsonrpc, id);
                     result
                         .try_into()
-                        .map_err(|_| Error::custom("failed to parse the result: {}"))
+                        .map_err(|_| Error::custom("failed to parse the result"))
                 }
                 Output::Failure(failure) => {
                     let Failure { jsonrpc, error, id } = failure;
