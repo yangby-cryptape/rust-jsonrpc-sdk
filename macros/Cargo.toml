@@ -1,6 +1,6 @@
 [package]
 name = "jsonrpc-sdk-macros"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Boyu Yang <yangby@cryptape.com>"]
 edition = "2018"
 description = "A internal crate used by jsonrpc-sdk-prelude."

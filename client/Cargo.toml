@@ -1,6 +1,6 @@
 [package]
 name = "jsonrpc-sdk-client"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Boyu Yang <yangby@cryptape.com>"]
 edition = "2018"
 description = "A simple JSON-RPC client."
@@ -11,7 +11,7 @@ categories = ["web-programming"]
 license = "Apache-2.0 OR MIT"
 
 [dependencies]
-jsonrpc-sdk-prelude = { version = "=0.1.3", path = "../prelude" }
+jsonrpc-sdk-prelude = { version = "=0.1.4", path = "../prelude" }
 reqwest = "~0.9"
 futures = "~0.1"
 
