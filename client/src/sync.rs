@@ -6,9 +6,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+pub use reqwest::{header::HeaderMap, IntoUrl};
 use reqwest::{
-    header::HeaderMap, Client as RawClient, ClientBuilder as RawClientBuilder, IntoUrl,
-    RequestBuilder as RawRequestBuilder, Response as RawResponse,
+    Client as RawClient, ClientBuilder as RawClientBuilder, RequestBuilder as RawRequestBuilder,
+    Response as RawResponse,
 };
 
 use jsonrpc_sdk_prelude::{jsonrpc_core::Response, CommonPart, JsonRpcRequest, Result};
@@ -67,7 +68,7 @@ impl RequestBuilder {
     where
         T: JsonRpcRequest,
     {
-        content.to_single_request(common).and_then(|request| {
+        normal_error!(content.to_single_request(common)).and_then(|request| {
             self.0
                 .json(&request)
                 .send()

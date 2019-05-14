@@ -6,8 +6,17 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#[macro_use]
-mod helper;
+macro_rules! normal_error {
+    ($expr:expr) => {{
+        $expr
+    }};
+}
 
-pub mod r#async;
-pub mod sync;
+macro_rules! future_error {
+    ($expr:expr) => {{
+        match $expr {
+            Ok(result) => future::ok(result),
+            Err(error) => future::err(error),
+        }
+    }};
+}

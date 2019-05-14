@@ -7,14 +7,11 @@
 // except according to those terms.
 
 use futures::{future, Future};
-use reqwest::{
-    header::HeaderMap,
-    r#async::{
-        Client as RawClient, ClientBuilder as RawClientBuilder,
-        RequestBuilder as RawRequestBuilder, Response as RawResponse,
-    },
-    IntoUrl,
+use reqwest::r#async::{
+    Client as RawClient, ClientBuilder as RawClientBuilder, RequestBuilder as RawRequestBuilder,
+    Response as RawResponse,
 };
+pub use reqwest::{header::HeaderMap, IntoUrl};
 
 use jsonrpc_sdk_prelude::{jsonrpc_core::Response, CommonPart, Error, JsonRpcRequest, Result};
 
@@ -76,11 +73,7 @@ impl RequestBuilder {
     where
         T: JsonRpcRequest,
     {
-        match content.to_single_request(common) {
-            Ok(request) => future::ok(request),
-            Err(error) => future::err(error),
-        }
-        .and_then(|request| {
+        future_error!(content.to_single_request(common)).and_then(|request| {
             self.0
                 .json(&request)
                 .send()
