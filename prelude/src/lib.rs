@@ -9,7 +9,7 @@
 pub use jsonrpc_core;
 pub use serde_json;
 
-pub use jsonrpc_sdk_macros::jsonrpc_client;
+pub use jsonrpc_sdk_macros::jsonrpc_interfaces;
 
 mod error;
 mod kernel;

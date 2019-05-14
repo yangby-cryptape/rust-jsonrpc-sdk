@@ -292,7 +292,7 @@ fn construct_jsonrpc_common_part(
 }
 
 #[proc_macro]
-pub fn jsonrpc_client(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+pub fn jsonrpc_interfaces(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let inputs = syn::parse_macro_input!(input as JsonRpcClientDef);
     let expanded = {
         let JsonRpcClientDef { name, vis, apis } = inputs;
