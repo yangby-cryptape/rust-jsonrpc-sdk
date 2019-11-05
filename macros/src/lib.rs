@@ -110,13 +110,17 @@ impl JsonRpcClientDef {
                     "don't support default implementation",
                 ));
             }
-            let syn::MethodSig {
+            let syn::Signature {
                 constness,
-                unsafety,
                 asyncness,
+                unsafety,
                 abi,
                 ident,
-                decl,
+                generics,
+                variadic,
+                inputs,
+                output,
+                ..
             } = sig;
             if let Some(tk) = constness {
                 return Err(ParseError::new(tk.span, "don't support `const`"));
@@ -133,20 +137,20 @@ impl JsonRpcClientDef {
                     "don't support  binary interface",
                 ));
             }
-            if !decl.generics.params.is_empty() {
-                let sp = decl.generics.span();
+            if !generics.params.is_empty() {
+                let sp = generics.span();
                 return Err(ParseError::new(sp, "don't support generics"));
             }
-            if let Some(ref tk) = decl.variadic {
+            if let Some(ref tk) = variadic {
                 return Err(ParseError::new(tk.span(), "don't support variadic"));
             }
             let name = syn::LitStr::new(&ident.to_string(), ident.span());
             let func = snake_case(&ident);
             let prefix = pascal_case(&ident);
-            let mut inputs = Vec::new();
-            for input in decl.inputs.into_iter() {
-                if let syn::FnArg::Ignored(ty) = input {
-                    inputs.push(ty);
+            let mut inputs_vec = Vec::new();
+            for input in inputs.into_iter() {
+                if let syn::FnArg::Typed(syn::PatType { ty, .. }) = input {
+                    inputs_vec.push(*ty);
                 } else {
                     return Err(ParseError::new(
                         input.span(),
@@ -154,7 +158,7 @@ impl JsonRpcClientDef {
                     ));
                 }
             }
-            let output = if let syn::ReturnType::Type(_, bt) = decl.output {
+            let output = if let syn::ReturnType::Type(_, bt) = output {
                 *bt
             } else {
                 syn::Type::Tuple(syn::TypeTuple {
@@ -166,7 +170,7 @@ impl JsonRpcClientDef {
                 name,
                 func,
                 prefix,
-                inputs,
+                inputs: inputs_vec,
                 output,
             };
             Ok(api)
@@ -211,13 +215,9 @@ fn construct_jsonrpc_api(
         (define_part, impl_part)
     } else {
         let inputs_len = inputs.len() as u64;
-        let len = syn::LitInt::new(
-            inputs_len,
-            syn::IntSuffix::None,
-            proc_macro2::Span::call_site(),
-        );
+        let len = syn::LitInt::new(&format!("{}", inputs_len), proc_macro2::Span::call_site());
         let idx = &(0..inputs_len)
-            .map(|i| syn::LitInt::new(i, syn::IntSuffix::None, proc_macro2::Span::call_site()))
+            .map(|i| syn::LitInt::new(&format!("{}", i), proc_macro2::Span::call_site()))
             .collect::<Vec<_>>();
         let arg = (0..inputs_len)
             .map(|i| format!("v{}", i))
